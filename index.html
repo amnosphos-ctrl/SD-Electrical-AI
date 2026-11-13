@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111c31">
+  <meta name="description" content="SD Electrical AI helps electrical contractors organize construction job and bidding opportunity searches across New England.">
+  <title>SD Electrical AI | Contractor Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #111c31;
+      --navy-soft: #1b2942;
+      --blue: #2878e5;
+      --blue-dark: #1d63c4;
+      --blue-light: #edf5ff;
+      --ink: #17243a;
+      --muted: #718096;
+      --line: #e6ebf2;
+      --canvas: #f5f7fb;
+      --white: #fff;
+      --green: #23876a;
+      --shadow: 0 12px 32px rgba(27, 47, 78, .06);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    button, input, select { font: inherit; }
+    button, a, select { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; text-decoration: none; }
+    button { color: inherit; }
+
+    :focus-visible {
+      outline: 3px solid rgba(40, 120, 229, .38);
+      outline-offset: 3px;
+    }
+
+    .app-shell { min-height: 100vh; }
+
+    .sidebar {
+      position: fixed;
+      z-index: 5;
+      inset: 0 auto 0 0;
+      display: flex;
+      width: 252px;
+      flex-direction: column;
+      padding: 27px 18px 20px;
+      background: var(--navy);
+      color: #d7dfed;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      color: #fff;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 12px;
+      background: linear-gradient(145deg, #4098ff, #2368d2);
+      box-shadow: 0 5px 16px rgba(31, 112, 225, .32);
+    }
+
+    .brand-mark svg { width: 22px; height: 22px; }
+    .brand-name { font-size: 14px; font-weight: 750; letter-spacing: .075em; }
+    .brand-subtitle { margin-top: 1px; color: #91a1bb; font-size: 11px; }
+    .nav-label { margin: 42px 10px 12px; color: #7788a4; font-size: 10px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: 6px; }
+
+    .nav-link {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px;
+      border-radius: 9px;
+      color: #aab6c9;
+      font-size: 13px;
+      font-weight: 570;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .nav-link:hover, .nav-link[aria-current="page"] { background: #202f49; color: #fff; }
+    .nav-link[aria-current="page"] { box-shadow: inset 3px 0 #48a0ff; }
+    .nav-link svg { width: 17px; height: 17px; flex: none; }
+    .sidebar-spacer { flex: 1; }
+
+    .sidebar-note {
+      padding: 15px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 12px;
+      background: rgba(255,255,255,.045);
+    }
+
+    .sidebar-note-title { color: #fff; font-size: 12px; font-weight: 650; }
+    .sidebar-note p { margin: 6px 0 12px; color: #9cabc0; font-size: 11px; line-height: 1.6; }
+    .sidebar-note a { color: #77b5ff; font-size: 11px; font-weight: 650; }
+
+    .main-column { min-height: 100vh; margin-left: 252px; }
+
+    .topbar {
+      position: sticky;
+      z-index: 4;
+      top: 0;
+      display: flex;
+      height: 70px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(22px, 4vw, 56px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(12px);
+    }
+
+    .mobile-brand, .menu-toggle { display: none; }
+    .breadcrumb { color: var(--muted); font-size: 13px; }
+    .breadcrumb strong { color: var(--ink); font-weight: 650; }
+
+    .workspace-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border: 1px solid #e8edf5;
+      border-radius: 999px;
+      background: #fff;
+      color: #56657b;
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #f0ab48; }
+    main { width: min(1120px, 100%); margin: 0 auto; padding: 40px clamp(22px, 4vw, 56px) 64px; }
+
+    .welcome-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 27px;
+    }
+
+    .eyebrow { margin: 0 0 7px; color: var(--blue); font-size: 11px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; color: var(--ink); font-size: clamp(26px, 3.2vw, 34px); font-weight: 720; letter-spacing: -.045em; line-height: 1.2; }
+    .welcome-copy { max-width: 570px; margin: 9px 0 0; color: var(--muted); font-size: 14px; }
+
+    .demo-badge {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid #f1dfbf;
+      border-radius: 8px;
+      background: #fffaf1;
+      color: #956b2f;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .demo-badge svg { width: 14px; height: 14px; }
+
+    .coverage-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+      padding: 17px 20px;
+      border: 1px solid #e2eaf5;
+      border-radius: 12px;
+      background: linear-gradient(110deg, #fff, #f8fbff);
+    }
+
+    .coverage-label { color: #66758a; font-size: 12px; font-weight: 650; }
+    .coverage-label strong { display: block; margin-bottom: 2px; color: var(--ink); font-size: 13px; }
+    .state-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .state-pill {
+      padding: 6px 11px;
+      border: 1px solid #dfe7f1;
+      border-radius: 999px;
+      background: #fff;
+      color: #53647b;
+      font-size: 11px;
+      font-weight: 650;
+      transition: border-color .16s ease, background .16s ease, color .16s ease;
+    }
+
+    .state-pill:hover, .state-pill[aria-pressed="true"] { border-color: #b7d5fb; background: var(--blue-light); color: var(--blue-dark); }
+    .card { border: 1px solid var(--line); border-radius: 14px; background: var(--white); box-shadow: var(--shadow); }
+
+    .search-card { margin-bottom: 23px; padding: 24px; }
+    .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .section-heading h2 { margin: 0; color: var(--ink); font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .search-fields { display: grid; grid-template-columns: minmax(160px, 1.3fr) minmax(155px, .8fr) minmax(175px, .9fr) auto; align-items: end; gap: 13px; margin-top: 22px; }
+
+    .field { display: grid; gap: 7px; }
+    .field label { color: #526179; font-size: 11px; font-weight: 680; }
+    .input-wrap { position: relative; }
+    .input-wrap svg { position: absolute; top: 50%; left: 12px; width: 16px; height: 16px; color: #8a98ab; transform: translateY(-50%); pointer-events: none; }
+    input, select { width: 100%; height: 43px; border: 1px solid #dfe5ed; border-radius: 8px; background: #fff; color: var(--ink); font-size: 12px; }
+    input { padding: 0 12px 0 37px; }
+    select { padding: 0 32px 0 11px; }
+    input::placeholder { color: #9aa6b6; }
+    input:focus, select:focus { border-color: #81b4f4; outline: 3px solid rgba(40,120,229,.1); }
+
+    .primary-button {
+      display: inline-flex;
+      min-height: 43px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 17px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--blue);
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 680;
+      white-space: nowrap;
+      transition: background .18s ease, transform .18s ease;
+    }
+
+    .primary-button:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .primary-button svg { width: 15px; height: 15px; }
+    .search-feedback { min-height: 18px; margin: 13px 0 0; color: #66758a; font-size: 11px; }
+
+    .feed-card { overflow: hidden; margin-bottom: 22px; }
+    .feed-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 23px; border-bottom: 1px solid var(--line); }
+    .feed-heading { display: flex; align-items: center; gap: 11px; }
+    .feed-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; background: var(--blue-light); color: var(--blue); }
+    .feed-icon svg { width: 18px; height: 18px; }
+    .feed-heading h2 { margin: 0; font-size: 15px; font-weight: 700; }
+    .feed-heading p { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+    .connection-badge { padding: 5px 9px; border-radius: 999px; background: #fff3e7; color: #9a6830; font-size: 10px; font-weight: 720; }
+
+    .empty-state { display: grid; justify-items: center; padding: 40px 24px 43px; text-align: center; }
+    .empty-illustration { display: grid; width: 58px; height: 58px; place-items: center; margin-bottom: 15px; border: 1px solid #dceaff; border-radius: 18px; background: #f3f8ff; color: var(--blue); }
+    .empty-illustration svg { width: 26px; height: 26px; }
+    .empty-state h3 { margin: 0; font-size: 15px; font-weight: 700; }
+    .empty-state p { max-width: 405px; margin: 7px 0 17px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .text-link { color: var(--blue-dark); font-size: 12px; font-weight: 700; }
+    .text-link:hover { text-decoration: underline; }
+
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .info-card { display: flex; gap: 14px; padding: 19px; }
+    .info-icon { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border-radius: 10px; background: #eef4fc; color: #526f9b; }
+    .info-icon svg { width: 17px; height: 17px; }
+    .info-card h3 { margin: 0; font-size: 13px; font-weight: 700; }
+    .info-card p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .footer { margin-top: 33px; color: #8995a6; font-size: 10px; text-align: center; }
+
+    @media (max-width: 1060px) {
+      .sidebar { width: 220px; }
+      .main-column { margin-left: 220px; }
+      .search-fields { grid-template-columns: 1fr 1fr; }
+      .search-fields .primary-button { justify-self: start; }
+    }
+
+    @media (max-width: 720px) {
+      .sidebar { width: 270px; max-width: calc(100vw - 46px); transform: translateX(-100%); transition: transform .22s ease; box-shadow: 18px 0 40px rgba(10,25,48,.18); }
+      .sidebar.is-open { transform: translateX(0); }
+      .main-column { margin-left: 0; }
+      .topbar { height: 62px; padding: 0 20px; }
+      .menu-toggle { display: grid; width: 36px; height: 36px; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 9px; background: #fff; cursor: pointer; }
+      .menu-toggle svg { width: 18px; height: 18px; }
+      .topbar-left { display: flex; align-items: center; gap: 12px; }
+      .mobile-brand { display: block; color: var(--ink); font-size: 12px; font-weight: 760; letter-spacing: .04em; }
+      .breadcrumb { display: none; }
+      main { padding-top: 29px; }
+      .coverage-strip { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (max-width: 520px) {
+      main { padding-right: 17px; padding-left: 17px; }
+      .topbar { padding-right: 16px; padding-left: 16px; }
+      .workspace-status { padding: 6px 9px; font-size: 10px; }
+      .welcome-row { align-items: flex-start; flex-direction: column; gap: 13px; }
+      .welcome-copy { font-size: 13px; }
+      .search-card { padding: 19px 16px; }
+      .search-fields { grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
+      .search-fields .primary-button { width: 100%; }
+      .feed-header { align-items: flex-start; padding: 17px 16px; }
+      .connection-badge { margin-top: 2px; white-space: nowrap; }
+      .empty-state { padding: 34px 18px 37px; }
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#overview" aria-label="SD Electrical AI dashboard">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13.3 2.8 5.8 13h5.1l-.5 8.2L18.3 11h-5.1l.1-8.2Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </span>
+        <span><span class="brand-name">SD ELECTRICAL</span><span class="brand-subtitle">AI CONTRACTOR TOOLS</span></span>
+      </a>
+
+      <p class="nav-label">Workspace</p>
+      <nav class="nav-list" aria-label="Workspace">
+        <a class="nav-link" href="#overview" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+          Overview
+        </a>
+        <a class="nav-link" href="#search">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Find opportunities
+        </a>
+        <a class="nav-link" href="opportunities.html">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5.5h14v15H5zM8 3.5v4M16 3.5v4M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Opportunities
+        </a>
+        <a class="nav-link" href="#sources">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 19 7v5c0 4.3-2.9 7.1-7 8.5C7.9 19.1 5 16.3 5 12V7l7-3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Data sources
+        </a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-note">
+        <div class="sidebar-note-title">Bring your own data</div>
+        <p>Connect a trusted opportunity source to start seeing real bid opportunities here.</p>
+        <a href="#sources">Explore data setup <span aria-hidden="true">→</span></a>
+      </div>
+    </aside>
+
+    <div class="main-column">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <span class="mobile-brand">SD ELECTRICAL AI</span>
+          <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <strong>Overview</strong></div>
+        </div>
+        <div class="workspace-status"><span class="status-dot" aria-hidden="true"></span>Demo workspace</div>
+      </header>
+
+      <main id="overview">
+        <section class="welcome-row" aria-labelledby="page-title">
+          <div>
+            <p class="eyebrow">Contractor workspace</p>
+            <h1 id="page-title">A clearer view of your next bid.</h1>
+            <p class="welcome-copy">Search construction opportunities across New England and keep your next project in sight.</p>
+          </div>
+          <div class="demo-badge">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 10.5v5M12 7.5h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+            Live listings not connected
+          </div>
+        </section>
+
+        <section class="coverage-strip" aria-label="Supported states">
+          <div class="coverage-label"><strong>Regional coverage</strong>Choose a state to set your search area.</div>
+          <div class="state-pills" aria-label="Quick state filters">
+            <button class="state-pill" type="button" data-state="RI" aria-pressed="false">Rhode Island</button>
+            <button class="state-pill" type="button" data-state="MA" aria-pressed="false">Massachusetts</button>
+            <button class="state-pill" type="button" data-state="NH" aria-pressed="false">New Hampshire</button>
+            <button class="state-pill" type="button" data-state="ME" aria-pressed="false">Maine</button>
+          </div>
+        </section>
+
+        <section class="card search-card" id="search" aria-labelledby="search-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="search-title">Find electrical opportunities</h2>
+              <p>Set your search criteria for the region and project type you serve.</p>
+            </div>
+          </div>
+          <form id="searchForm">
+            <div class="search-fields">
+              <div class="field">
+                <label for="keyword">Keywords</label>
+                <div class="input-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  <input id="keyword" name="keyword" type="search" placeholder="e.g. tenant fit-out">
+                </div>
+              </div>
+              <div class="field">
+                <label for="state">State</label>
+                <select id="state" name="state">
+                  <option value="RI">Rhode Island</option>
+                  <option value="MA">Massachusetts</option>
+                  <option value="NH">New Hampshire</option>
+                  <option value="ME">Maine</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="jobType">Project type</label>
+                <select id="jobType" name="jobType">
+                  <option value="all">All electrical projects</option>
+                  <option value="electrical">Electrical construction</option>
+                  <option value="firealarm">Fire alarm</option>
+                  <option value="commercial">Commercial</option>
+                  <option value="retail">Retail</option>
+                  <option value="multifamily">Multifamily</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="hotel">Hotel</option>
+                  <option value="construction">New construction</option>
+                  <option value="residential">Residential</option>
+                  <option value="industrial">Industrial</option>
+                  <option value="service">Service calls</option>
+                  <option value="pool">Pool automation</option>
+                </select>
+              </div>
+              <button class="primary-button" type="submit">
+                Search opportunities
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <p class="search-feedback" id="searchFeedback" aria-live="polite">Choose filters to prepare a search for official procurement portals. No live listings are connected.</p>
+            <a class="text-link" id="officialSearchLink" href="opportunities.html" hidden>Continue to official opportunities <span aria-hidden="true">→</span></a>
+          </form>
+        </section>
+
+        <section class="card feed-card" id="opportunities" aria-labelledby="feed-title">
+          <div class="feed-header">
+            <div class="feed-heading">
+              <span class="feed-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M5 5.5h14v15H5zM8 3.5v4M16 3.5v4M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div>
+                <h2 id="feed-title">Opportunity feed</h2>
+                <p>Listings from your connected sources will appear here.</p>
+              </div>
+            </div>
+            <span class="connection-badge">No source connected</span>
+          </div>
+          <div class="empty-state">
+            <span class="empty-illustration" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 19.5h16M6.5 19.5V9l5.5-4 5.5 4v10.5M9.5 19.5v-6h5v6M9 10.5h.01M15 10.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Your opportunity feed is ready when you are</h3>
+            <p>No live job listings are shown because an opportunity data source has not been connected. Your searches won't contact an external service.</p>
+            <a class="text-link" href="#sources">View data source setup <span aria-hidden="true">→</span></a>
+          </div>
+        </section>
+
+        <section class="bottom-grid" id="sources" aria-label="Workspace information">
+          <article class="card info-card">
+            <span class="info-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 19 7v5c0 4.3-2.9 7.1-7 8.5C7.9 19.1 5 16.3 5 12V7l7-3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </span>
+            <div>
+              <h3>Data sources</h3>
+              <p>No bid boards, public feeds, or contractor databases are connected yet. Listings will only appear after a source is configured.</p>
+            </div>
+          </article>
+          <article class="card info-card">
+            <span class="info-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 19.5h15M6 16l4-4 3 2.5 5-6M15 8.5h3v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div>
+              <h3>Search preferences</h3>
+              <p>Use the filters above to prepare a search for electrical, commercial, residential, and construction project types.</p>
+            </div>
+          </article>
+        </section>
+
+        <footer class="footer">SD Electrical AI <span aria-hidden="true">·</span> Contractor opportunity workspace</footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const stateSelect = document.getElementById("state");
+    const statePills = document.querySelectorAll(".state-pill");
+    const searchForm = document.getElementById("searchForm");
+    const searchFeedback = document.getElementById("searchFeedback");
+    const officialSearchLink = document.getElementById("officialSearchLink");
+    const sidebar = document.getElementById("sidebar");
+    const menuToggle = document.getElementById("menuToggle");
+
+    function updateStatePills() {
+      statePills.forEach((pill) => {
+        pill.setAttribute("aria-pressed", String(pill.dataset.state === stateSelect.value));
+      });
+    }
+
+    stateSelect.addEventListener("change", updateStatePills);
+    statePills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        stateSelect.value = pill.dataset.state;
+        updateStatePills();
+      });
+    });
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const stateName = stateSelect.options[stateSelect.selectedIndex].text;
+      const projectType = document.getElementById("jobType").selectedOptions[0].text;
+      const keyword = document.getElementById("keyword").value.trim();
+      const params = new URLSearchParams({
+        state: stateSelect.value,
+        category: document.getElementById("jobType").value
+      });
+      if (keyword) params.set("keyword", keyword);
+
+      searchFeedback.textContent = `Search prepared for ${stateName} · ${projectType.toLowerCase()}${keyword ? ` · “${keyword}”` : ""}. Choose an official source to view current solicitations.`;
+      officialSearchLink.href = `opportunities.html?${params.toString()}`;
+      officialSearchLink.hidden = false;
+    });
+
+    menuToggle.addEventListener("click", () => {
+      const isOpen = sidebar.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+      menuToggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+    });
+
+    sidebar.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        sidebar.classList.remove("is-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Open navigation menu");
+      });
+    });
+
+    updateStatePills();
+  </script>
+</body>
+</html>

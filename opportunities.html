@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111c31">
+  <meta name="description" content="Search official public procurement portals for electrical construction bidding opportunities across New England.">
+  <title>Official Opportunities | SD Electrical AI</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #111c31;
+      --blue: #2878e5;
+      --blue-dark: #1d63c4;
+      --blue-light: #edf5ff;
+      --ink: #17243a;
+      --muted: #718096;
+      --line: #e6ebf2;
+      --canvas: #f5f7fb;
+      --white: #fff;
+      --shadow: 0 12px 32px rgba(27, 47, 78, .06);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.5; }
+    button, input, select { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 3px solid rgba(40, 120, 229, .38); outline-offset: 3px; }
+    .app-shell { min-height: 100vh; }
+    .sidebar { position: fixed; z-index: 5; inset: 0 auto 0 0; display: flex; width: 252px; flex-direction: column; padding: 27px 18px 20px; background: var(--navy); color: #d7dfed; }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 0 10px; color: #fff; }
+    .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; background: linear-gradient(145deg, #4098ff, #2368d2); box-shadow: 0 5px 16px rgba(31,112,225,.32); }
+    .brand-mark svg { width: 22px; height: 22px; }
+    .brand-name { display: block; font-size: 14px; font-weight: 750; letter-spacing: .075em; }
+    .brand-subtitle { display: block; margin-top: 1px; color: #91a1bb; font-size: 11px; }
+    .nav-label { margin: 42px 10px 12px; color: #7788a4; font-size: 10px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: 6px; }
+    .nav-link { display: flex; min-height: 44px; align-items: center; gap: 12px; padding: 0 12px; border-radius: 9px; color: #aab6c9; font-size: 13px; font-weight: 570; }
+    .nav-link:hover, .nav-link[aria-current="page"] { background: #202f49; color: #fff; }
+    .nav-link[aria-current="page"] { box-shadow: inset 3px 0 #48a0ff; }
+    .nav-link svg { width: 17px; height: 17px; flex: none; }
+    .sidebar-spacer { flex: 1; }
+    .sidebar-note { padding: 15px; border: 1px solid rgba(255,255,255,.09); border-radius: 12px; background: rgba(255,255,255,.045); }
+    .sidebar-note-title { color: #fff; font-size: 12px; font-weight: 650; }
+    .sidebar-note p { margin: 6px 0 12px; color: #9cabc0; font-size: 11px; line-height: 1.6; }
+    .sidebar-note a { color: #77b5ff; font-size: 11px; font-weight: 650; }
+    .main-column { min-height: 100vh; margin-left: 252px; }
+    .topbar { position: sticky; z-index: 4; top: 0; display: flex; height: 70px; align-items: center; justify-content: space-between; padding: 0 clamp(22px, 4vw, 56px); border-bottom: 1px solid var(--line); background: rgba(255,255,255,.94); backdrop-filter: blur(12px); }
+    .mobile-brand, .menu-toggle { display: none; }
+    .breadcrumb { color: var(--muted); font-size: 13px; }
+    .breadcrumb strong { color: var(--ink); font-weight: 650; }
+    .workspace-status { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid #e8edf5; border-radius: 999px; background: #fff; color: #56657b; font-size: 11px; font-weight: 650; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #f0ab48; }
+    main { width: min(1120px, 100%); margin: 0 auto; padding: 40px clamp(22px, 4vw, 56px) 64px; }
+    .eyebrow { margin: 0 0 7px; color: var(--blue); font-size: 11px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; color: var(--ink); font-size: clamp(26px, 3.2vw, 34px); font-weight: 720; letter-spacing: -.045em; line-height: 1.2; }
+    .intro { max-width: 720px; margin: 9px 0 24px; color: var(--muted); font-size: 14px; }
+    .notice { display: flex; gap: 12px; margin: 0 0 22px; padding: 15px 17px; border: 1px solid #f1dfbf; border-radius: 11px; background: #fffaf1; color: #76582d; font-size: 12px; line-height: 1.6; }
+    .notice strong { color: #5f4726; }
+    .card { border: 1px solid var(--line); border-radius: 14px; background: var(--white); box-shadow: var(--shadow); }
+    .search-card { margin-bottom: 22px; padding: 22px; }
+    .section-heading h2 { margin: 0; color: var(--ink); font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .search-fields { display: grid; grid-template-columns: minmax(170px, 1fr) minmax(180px, 1.2fr) minmax(185px, .9fr) auto; align-items: end; gap: 13px; margin-top: 19px; }
+    .field { display: grid; gap: 7px; }
+    .field label { color: #526179; font-size: 11px; font-weight: 680; }
+    input, select { width: 100%; height: 43px; padding: 0 11px; border: 1px solid #dfe5ed; border-radius: 8px; background: #fff; color: var(--ink); font-size: 12px; }
+    input::placeholder { color: #9aa6b6; }
+    input:focus, select:focus { border-color: #81b4f4; outline: 3px solid rgba(40,120,229,.1); }
+    .primary-button { display: inline-flex; min-height: 43px; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--blue); color: #fff; cursor: pointer; font-size: 12px; font-weight: 680; white-space: nowrap; }
+    .primary-button:hover { background: var(--blue-dark); }
+    .phrase-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: 6px 10px; margin-top: 14px; color: var(--muted); font-size: 11px; }
+    .phrase-row strong { color: #526179; }
+    .phrase-row output { overflow-wrap: anywhere; color: var(--ink); }
+    .filter-note { margin: 10px 0 0; color: #7a8798; font-size: 11px; }
+    .source-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 26px 0 12px; }
+    .source-header h2 { margin: 0; font-size: 17px; font-weight: 700; }
+    .source-header p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .source-count { flex: none; color: #65748a; font-size: 11px; font-weight: 650; }
+    .source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .source-card { display: flex; min-height: 183px; flex-direction: column; padding: 19px; }
+    .source-card[hidden] { display: none; }
+    .source-top { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+    .source-icon { display: grid; width: 36px; height: 36px; flex: none; place-items: center; border-radius: 10px; background: var(--blue-light); color: var(--blue); }
+    .source-icon svg { width: 18px; height: 18px; }
+    .source-kind { color: #68778c; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .source-card h3 { margin: 0; font-size: 14px; font-weight: 700; }
+    .source-card p { margin: 0 0 14px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .source-link { display: inline-flex; align-items: center; gap: 7px; margin-top: auto; color: var(--blue-dark); font-size: 12px; font-weight: 700; }
+    .source-link:hover { text-decoration: underline; }
+    .source-link svg { width: 14px; height: 14px; }
+    .api-note { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-top: 18px; padding: 17px 19px; }
+    .api-note h3 { margin: 0; font-size: 13px; font-weight: 700; }
+    .api-note p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+    .api-note .source-link { flex: none; margin-top: 2px; }
+    .footer { margin-top: 33px; color: #8995a6; font-size: 10px; text-align: center; }
+    @media (max-width: 1060px) {
+      .sidebar { width: 220px; }
+      .main-column { margin-left: 220px; }
+      .search-fields { grid-template-columns: 1fr 1fr; }
+      .search-fields .primary-button { justify-self: start; }
+    }
+    @media (max-width: 720px) {
+      .sidebar { width: 270px; max-width: calc(100vw - 46px); transform: translateX(-100%); transition: transform .22s ease; box-shadow: 18px 0 40px rgba(10,25,48,.18); }
+      .sidebar.is-open { transform: translateX(0); }
+      .main-column { margin-left: 0; }
+      .topbar { height: 62px; padding: 0 20px; }
+      .menu-toggle { display: grid; width: 36px; height: 36px; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 9px; background: #fff; cursor: pointer; }
+      .menu-toggle svg { width: 18px; height: 18px; }
+      .topbar-left { display: flex; align-items: center; gap: 12px; }
+      .mobile-brand { display: block; color: var(--ink); font-size: 12px; font-weight: 760; letter-spacing: .04em; }
+      .breadcrumb { display: none; }
+      main { padding-top: 29px; }
+    }
+    @media (max-width: 520px) {
+      main { padding: 29px 17px 52px; }
+      .topbar { padding-right: 16px; padding-left: 16px; }
+      .workspace-status { padding: 6px 9px; font-size: 10px; }
+      .search-card { padding: 19px 16px; }
+      .search-fields { grid-template-columns: 1fr; gap: 12px; }
+      .search-fields .primary-button { width: 100%; }
+      .source-grid { grid-template-columns: 1fr; }
+      .source-header { align-items: flex-start; flex-direction: column; gap: 7px; }
+      .api-note { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="index.html#overview" aria-label="SD Electrical AI dashboard">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13.3 2.8 5.8 13h5.1l-.5 8.2L18.3 11h-5.1l.1-8.2Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </span>
+        <span><span class="brand-name">SD ELECTRICAL</span><span class="brand-subtitle">AI CONTRACTOR TOOLS</span></span>
+      </a>
+      <p class="nav-label">Workspace</p>
+      <nav class="nav-list" aria-label="Workspace">
+        <a class="nav-link" href="index.html#overview">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+          Overview
+        </a>
+        <a class="nav-link" href="index.html#search">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Find opportunities
+        </a>
+        <a class="nav-link" href="opportunities.html" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5.5h14v15H5zM8 3.5v4M16 3.5v4M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Opportunities
+        </a>
+        <a class="nav-link" href="#sources">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 19 7v5c0 4.3-2.9 7.1-7 8.5C7.9 19.1 5 16.3 5 12V7l7-3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Data sources
+        </a>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-note">
+        <div class="sidebar-note-title">Official sources only</div>
+        <p>Listings stay on the procurement portals until a trusted data integration is configured.</p>
+        <a href="#sources">View sources <span aria-hidden="true">→</span></a>
+      </div>
+    </aside>
+
+    <div class="main-column">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <span class="mobile-brand">SD ELECTRICAL AI</span>
+          <div class="breadcrumb"><a href="index.html">Workspace</a> <span aria-hidden="true">/</span> <strong>Opportunities</strong></div>
+        </div>
+        <div class="workspace-status"><span class="status-dot" aria-hidden="true"></span>Official source search</div>
+      </header>
+
+      <main>
+        <section aria-labelledby="page-title">
+          <p class="eyebrow">New England procurement</p>
+          <h1 id="page-title">Search official opportunities</h1>
+          <p class="intro">Choose a state and project category, then open its official procurement portal to review current solicitations and bid requirements.</p>
+        </section>
+
+        <div class="notice" role="note">
+          <span aria-hidden="true">ⓘ</span>
+          <div><strong>No live listings are connected.</strong> These links open government procurement sites; this page does not claim to retrieve, verify, or rank individual bid opportunities.</div>
+        </div>
+
+        <section class="card search-card" aria-labelledby="search-title">
+          <div class="section-heading">
+            <h2 id="search-title">Prepare your search</h2>
+            <p>State filters the official source links. Keywords and category create a useful search phrase for the selected portal.</p>
+          </div>
+          <form id="opportunitySearch">
+            <div class="search-fields">
+              <div class="field">
+                <label for="keyword">Keywords</label>
+                <input id="keyword" name="keyword" type="search" placeholder="e.g. electrical renovation">
+              </div>
+              <div class="field">
+                <label for="state">State</label>
+                <select id="state" name="state">
+                  <option value="all">All four states</option>
+                  <option value="RI">Rhode Island</option>
+                  <option value="MA">Massachusetts</option>
+                  <option value="NH">New Hampshire</option>
+                  <option value="ME">Maine</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="category">Project type</label>
+                <select id="category" name="category">
+                  <option value="all">All electrical projects</option>
+                  <option value="electrical">Electrical construction</option>
+                  <option value="firealarm">Fire alarm</option>
+                  <option value="commercial">Commercial</option>
+                  <option value="retail">Retail</option>
+                  <option value="multifamily">Multifamily</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="hotel">Hotel</option>
+                  <option value="construction">New construction</option>
+                  <option value="residential">Residential</option>
+                  <option value="industrial">Industrial</option>
+                  <option value="service">Service calls</option>
+                  <option value="pool">Pool automation</option>
+                </select>
+              </div>
+              <button class="primary-button" type="submit">Update sources <span aria-hidden="true">→</span></button>
+            </div>
+            <div class="phrase-row"><strong>Suggested search phrase</strong><output id="searchPhrase" aria-live="polite">electrical construction</output></div>
+            <p class="filter-note" id="filterStatus" aria-live="polite">Showing official sources for all four states. Enter this phrase in the portal's own search; it is not sent automatically.</p>
+          </form>
+        </section>
+
+        <section id="sources" aria-labelledby="sources-title">
+          <div class="source-header">
+            <div>
+              <h2 id="sources-title">Official procurement sources</h2>
+              <p>Always confirm solicitation status, addenda, deadlines, and eligibility with the issuing agency.</p>
+            </div>
+            <span class="source-count" id="sourceCount" aria-live="polite">5 sources</span>
+          </div>
+
+          <div class="source-grid" id="sourceGrid">
+            <article class="card source-card" data-state="RI">
+              <div class="source-top">
+                <span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 20h14M7 20V9l5-4 5 4v11M9.5 11h.01M14.5 11h.01M10 20v-5h4v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <div><div class="source-kind">Rhode Island</div><h3>Division of Purchases</h3></div>
+              </div>
+              <p>Official Ocean State Procures solicitation listings and vendor information.</p>
+              <a class="source-link" href="https://ridop.ri.gov/vendor-resources/all-solicitations" target="_blank" rel="noopener noreferrer">Search all solicitations <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5m0-5-9 9M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </article>
+            <article class="card source-card" data-state="MA">
+              <div class="source-top">
+                <span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 20h14M7 20V9l5-4 5 4v11M9.5 11h.01M14.5 11h.01M10 20v-5h4v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <div><div class="source-kind">Massachusetts</div><h3>COMMBUYS</h3></div>
+              </div>
+              <p>The Commonwealth's e-procurement platform. Open Bids takes you to its public bid search.</p>
+              <a class="source-link" href="https://www.commbuys.com/bso/view/search/external/advancedSearchBid.xhtml?openBids=true" target="_blank" rel="noopener noreferrer">Search open bids <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5m0-5-9 9M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </article>
+            <article class="card source-card" data-state="NH">
+              <div class="source-top">
+                <span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 20h14M7 20V9l5-4 5 4v11M9.5 11h.01M14.5 11h.01M10 20v-5h4v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <div><div class="source-kind">New Hampshire</div><h3>State Bids &amp; Contracts</h3></div>
+              </div>
+              <p>New Hampshire Department of Administrative Services public bids and contracts portal.</p>
+              <a class="source-link" href="https://apps.das.nh.gov/bidscontracts/bids.aspx" target="_blank" rel="noopener noreferrer">Search state bids <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5m0-5-9 9M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </article>
+            <article class="card source-card" data-state="ME">
+              <div class="source-top">
+                <span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 20h14M7 20V9l5-4 5 4v11M9.5 11h.01M14.5 11h.01M10 20v-5h4v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <div><div class="source-kind">Maine</div><h3>Vendor &amp; Bid Resources</h3></div>
+              </div>
+              <p>Maine procurement vendor resources, including Vendor Self-Service and bid information.</p>
+              <a class="source-link" href="https://www.maine.gov/dafs/bbm/procurementservices/vendors" target="_blank" rel="noopener noreferrer">Open vendor resources <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5m0-5-9 9M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </article>
+            <article class="card source-card" data-state="ALL">
+              <div class="source-top">
+                <span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.8 12h16.4M12 3.5c2.1 2.3 3.2 5.2 3.2 8.5s-1.1 6.2-3.2 8.5c-2.1-2.3-3.2-5.2-3.2-8.5S9.9 5.8 12 3.5Z" stroke="currentColor" stroke-width="1.5"/></svg></span>
+                <div><div class="source-kind">Federal · all states</div><h3>SAM.gov Contract Opportunities</h3></div>
+              </div>
+              <p>Official federal opportunity search. Set place of performance and keywords in SAM.gov.</p>
+              <a class="source-link" href="https://sam.gov/search/?index=opp" target="_blank" rel="noopener noreferrer">Search federal opportunities <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5m0-5-9 9M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </article>
+          </div>
+        </section>
+
+        <aside class="card api-note">
+          <div>
+            <h3>Why federal listings are not shown in this dashboard</h3>
+            <p>SAM.gov's public API requires an API key. GitHub Pages serves static files, so no key is embedded here. A secure automated feed would need a server-side integration or a scheduled GitHub Actions job using a repository secret.</p>
+          </div>
+          <a class="source-link" href="https://open.gsa.gov/api/get-opportunities-public-api/" target="_blank" rel="noopener noreferrer">SAM.gov API requirements <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5m0-5-9 9M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </aside>
+
+        <footer class="footer">SD Electrical AI <span aria-hidden="true">·</span> Official-source search, not an issuing agency</footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const stateSelect = document.getElementById("state");
+    const keywordInput = document.getElementById("keyword");
+    const categorySelect = document.getElementById("category");
+    const sourceCards = Array.from(document.querySelectorAll(".source-card"));
+    const sourceCount = document.getElementById("sourceCount");
+    const searchPhrase = document.getElementById("searchPhrase");
+    const filterStatus = document.getElementById("filterStatus");
+    const searchForm = document.getElementById("opportunitySearch");
+    const sidebar = document.getElementById("sidebar");
+    const menuToggle = document.getElementById("menuToggle");
+
+    const categoryTerms = {
+      all: "electrical construction",
+      electrical: "electrical construction electrical systems",
+      firealarm: "fire alarm fire protection systems",
+      commercial: "commercial construction electrical",
+      retail: "retail construction electrical",
+      multifamily: "multifamily apartment electrical",
+      healthcare: "healthcare hospital clinic electrical",
+      hotel: "hotel hospitality construction electrical",
+      construction: "new construction electrical",
+      residential: "residential electrical",
+      industrial: "industrial electrical",
+      service: "electrical service",
+      pool: "pool automation electrical"
+    };
+
+    function updatePhrase() {
+      const terms = [keywordInput.value.trim(), categoryTerms[categorySelect.value] || categoryTerms.all];
+      searchPhrase.textContent = Array.from(new Set(terms.join(" ").split(/\s+/).filter(Boolean))).join(" ");
+    }
+
+    function updateSources() {
+      const state = stateSelect.value;
+      let visible = 0;
+      sourceCards.forEach((card) => {
+        const showCard = state === "all" || card.dataset.state === state || card.dataset.state === "ALL";
+        card.hidden = !showCard;
+        if (showCard) visible += 1;
+      });
+
+      const stateName = stateSelect.options[stateSelect.selectedIndex].text;
+      sourceCount.textContent = `${visible} official source${visible === 1 ? "" : "s"}`;
+      filterStatus.textContent = state === "all"
+        ? "Showing official sources for all four states. Enter this phrase in the portal's own search; it is not sent automatically."
+        : `Showing official sources for ${stateName}. Enter the suggested phrase in the portal's own search; it is not sent automatically.`;
+      updatePhrase();
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const allowedStates = ["all", "RI", "MA", "NH", "ME"];
+    const allowedCategories = Object.keys(categoryTerms);
+    const requestedState = params.get("state");
+    const requestedCategory = params.get("category");
+    if (allowedStates.includes(requestedState)) stateSelect.value = requestedState;
+    if (allowedCategories.includes(requestedCategory)) categorySelect.value = requestedCategory;
+    keywordInput.value = params.get("keyword") || "";
+
+    stateSelect.addEventListener("change", updateSources);
+    categorySelect.addEventListener("change", updatePhrase);
+    keywordInput.addEventListener("input", updatePhrase);
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      updateSources();
+      const nextParams = new URLSearchParams({
+        state: stateSelect.value,
+        category: categorySelect.value
+      });
+      if (keywordInput.value.trim()) nextParams.set("keyword", keywordInput.value.trim());
+      window.history.replaceState(null, "", `${window.location.pathname}?${nextParams.toString()}#sources`);
+      document.getElementById("sources").scrollIntoView({ behavior: "smooth" });
+    });
+
+    menuToggle.addEventListener("click", () => {
+      const isOpen = sidebar.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+      menuToggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+    });
+    sidebar.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        sidebar.classList.remove("is-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Open navigation menu");
+      });
+    });
+
+    updateSources();
+  </script>
+</body>
+</html>
